@@ -1,0 +1,15 @@
+{
+  "name": "juego-pelea-animales-cloudflare",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PELEA CON ANIMALES: juego móvil en Cloudflare Pages + Pages Functions + D1 (serverless, pago por uso)",
+  "scripts": {
+    "dev": "wrangler pages dev web --d1 DB=pelea-animales-db --port 8788",
+    "db:local": "wrangler d1 execute pelea-animales-db --local --file=d1/schema.sql",
+    "db:remote": "wrangler d1 execute pelea-animales-db --remote --file=d1/schema.sql",
+    "deploy": "wrangler pages deploy web --project-name juego-pelea-animales --branch main"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

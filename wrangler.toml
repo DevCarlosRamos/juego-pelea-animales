@@ -1,0 +1,16 @@
+﻿# ============================================================
+# ConfiguraciÃ³n de Cloudflare Pages para PELEA CON ANIMALES
+# El valor de database_id lo rellena automÃ¡ticamente el script
+# scripts/deploy-cloudflare.ps1 (o `wrangler d1 create ... --update-config`)
+# ============================================================
+name = "juego-pelea-animales"
+pages_build_output_dir = "./web"
+compatibility_date = "2026-08-08"
+compatibility_flags = ["nodejs_compat"]
+
+# Enlace a la base de datos D1 (SQLite serverless de Cloudflare, pago por uso)
+[[d1_databases]]
+binding = "DB"
+database_name = "pelea-animales-db"
+database_id = "08f77775-574e-4259-b0db-93112401ad36"
+
