@@ -91,12 +91,22 @@ function autoPlayer() {
 
 // ---- Jugar hasta el final (victoria o derrota) ----
 let safety = 0;
+let queuedDuringFight = false;
+let queuedAttacked = false;
 while (game.phase !== 'matchEnd' && safety < 40000) {
+  if (game.phase === 'fight' && game.queued) {
+    queuedDuringFight = true;
+    if (game.queued.attack || game.queued.state === 'attack') queuedAttacked = true;
+  }
   if (game.phase === 'fight') autoPlayer();
   pump();
   safety++;
 }
 INPUT.state.right = false; INPUT.state.left = false; INPUT.state.block = false;
+
+if (queuedDuringFight && queuedAttacked) {
+  throw new Error('El animal en cola atacó antes de su turno (1 a la vez roto)');
+}
 
 console.log('fin de partida -> phase=', game.phase, 'won=', game.won, 'score=', game.score,
             'wave=', game.wave, 'playerHP=', Math.round(game.player.hp));

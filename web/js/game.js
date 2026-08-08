@@ -138,8 +138,8 @@ Game.prototype.step = function (dt) {
 
   this.updateEnterFlags(dt);
 
+  // Solo el animal ACTIVO pelea; el que está entrando (cola) espera su turno
   if (a && a.ai) a.ai.update(dt, this);
-  if (this.queued && this.queued.ai) this.queued.ai.update(dt, this);
 
   this.physics(p, dt);
   if (a) this.physics(a, dt);
