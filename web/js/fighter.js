@@ -187,7 +187,11 @@ Fighter.prototype.draw = function (ctx) {
   ctx.restore();
 };
 
-/* --- Geometría procedural del personaje humano (pies en 0,0, arriba = -y) --- */
+/* --- Geometría procedural del personaje (v2): política de traje blanco ---
+   Figura femenina estilizada (inspiración Keiko Fujimori, genérica, no realista):
+   pelo negro liso a los hombros, traje blanco (blazer + pantalón),
+   banda presidencial roja/blanca y zapatos negros. Sin rasgos faciales.
+   Mismas proporciones del personaje original (w=58, h=128), pivot centrado. */
 Fighter.prototype.buildPose = function () {
   const f = this.facing;
   const h = this.h, w = this.w;
@@ -201,6 +205,18 @@ Fighter.prototype.buildPose = function () {
   let leg2 = { x1: -f * 6, y1: hipY, x2: -f * 9, y2: 0 };
   let arm1 = { x1: f * 7, y1: shY + 8, x2: f * 16, y2: shY + 26 };
   let arm2 = { x1: -f * 7, y1: shY + 8, x2: -f * 12, y2: shY + 30 };
+
+  // Paleta del personaje v2
+  const C = {
+    suit: '#eef2f7',      // blazer blanco
+    suitLight: '#ffffff', // pantalones y mangas
+    suitDark: '#c6d2de',  // sombreado del traje
+    skin: '#f2c29a',      // piel
+    hair: '#161b26',      // pelo negro liso
+    sash: '#dc2626',      // banda presidencial roja
+    sashLight: '#ffffff', // franja blanca de la banda
+    shoe: '#0f1420'       // zapatos negros
+  };
 
   if (this.state === 'ko') {
     hipY = -h * 0.30; shY = -h * 0.55; headY = -h * 0.70;
@@ -222,16 +238,14 @@ Fighter.prototype.buildPose = function () {
   } else if (this.state === 'attack') {
     const type = this.attack ? this.attack.type : 'punch';
     const def = this.attacks[type];
-    const p = this.attack ? Math.min(1, this.attack.t / (def.startup + def.active + def.recovery)) : 0;
     if (type === 'punch') {
       const ext = Math.sin(Math.min(1, this.attack.t / (def.startup + def.active)) * Math.PI);
       arm1 = { x1: f * 8, y1: shY + 4, x2: f * (14 + 60 * ext), y2: shY + 12 };
-      parts.push({ t: 'circle', x: f * (14 + 60 * ext), y: shY + 12, r: 9, c: this.color.skin });
+      parts.push({ t: 'circle', x: f * (14 + 60 * ext), y: shY + 12, r: 8, c: C.skin });
       lean = -f * 10 * ext;
     } else {
       const ext = Math.sin(Math.min(1, this.attack.t / (def.startup + def.active)) * Math.PI);
       leg1 = { x1: f * 8, y1: hipY, x2: f * (10 + 78 * ext), y2: hipY + 34 };
-      parts.push({ t: 'circle', x: f * (10 + 78 * ext), y: hipY + 34, r: 9, c: this.color.dark });
       arm1 = { x1: -f * 6, y1: shY + 6, x2: f * 6, y2: shY + 18 };
       lean = -f * 14 * ext;
     }
@@ -248,23 +262,57 @@ Fighter.prototype.buildPose = function () {
     hipY += lean * 0.4; shY += lean * 0.4; headY += lean * 0.4;
   }
 
-  // Cuerpo
-  parts.push({ t: 'line', x1: 0, y1: shY, x2: 0, y2: hipY, w: w * 0.62, c: this.color.body });
-  parts.push({ t: 'line', x1: f * 2, y1: shY + 8, x2: f * 2, y2: hipY - 6, w: w * 0.30, c: this.color.accent });
-  // Piernas
-  parts.push({ t: 'line', x1: leg1.x1, y1: leg1.y1, x2: leg1.x2, y2: leg1.y2, w: 15, c: this.color.dark });
-  parts.push({ t: 'line', x1: leg2.x1, y1: leg2.y1, x2: leg2.x2, y2: leg2.y2, w: 15, c: this.color.dark });
-  parts.push({ t: 'line', x1: -f * 9, y1: hipY, x2: f * 9, y2: hipY, w: 7, c: '#facc15' });
-  // Brazos
-  parts.push({ t: 'line', x1: arm1.x1, y1: arm1.y1, x2: arm1.x2, y2: arm1.y2, w: 11, c: this.color.skin });
-  parts.push({ t: 'line', x1: arm2.x1, y1: arm2.y1, x2: arm2.x2, y2: arm2.y2, w: 11, c: this.color.skin });
-  parts.push({ t: 'circle', x: arm1.x2, y: arm1.y2, r: 6, c: this.color.skin });
-  parts.push({ t: 'circle', x: arm2.x2, y: arm2.y2, r: 6, c: this.color.skin });
-  // Cabeza
-  parts.push({ t: 'circle', x: 0, y: headY, r: 15, c: this.color.skin });
-  parts.push({ t: 'rect', x: -14, y: headY - 12, w: 28, h: 7, c: this.color.body });
-  parts.push({ t: 'line', x1: 0, y1: headY - 14, x2: f * 8, y2: headY - 20, w: 7, c: this.color.dark });
-  parts.push({ t: 'circle', x: 0, y: headY - 15, r: 5, c: this.color.dark });
+  // ============ Dibujo del personaje (femenino, traje blanco) ============
+  const midY = (shY + hipY) / 2;   // centro del torso
+  const isPunch = this.state === 'attack' && this.attack && this.attack.type === 'punch';
+
+  // Zapatos negros (detrás de los pantalones; se repintan encima abajo)
+  parts.push({ t: 'ell', x: leg1.x2, y: leg1.y2, rx: 8, ry: 4.5, c: C.shoe });
+  parts.push({ t: 'ell', x: leg2.x2, y: leg2.y2, rx: 8, ry: 4.5, c: C.shoe });
+
+  // Pantalones blancos + sombreado
+  parts.push({ t: 'line', x1: leg1.x1, y1: leg1.y1, x2: leg1.x2, y2: leg1.y2, w: 13, c: C.suitLight });
+  parts.push({ t: 'line', x1: leg2.x1, y1: leg2.y1, x2: leg2.x2, y2: leg2.y2, w: 13, c: C.suitLight });
+  parts.push({ t: 'line', x1: leg1.x1, y1: leg1.y1, x2: leg1.x2, y2: leg1.y2, w: 4, c: C.suitDark });
+  parts.push({ t: 'line', x1: leg2.x1, y1: leg2.y1, x2: leg2.x2, y2: leg2.y2, w: 4, c: C.suitDark });
+  // Zapatos negros (encima de la pierna para que se distingan)
+  parts.push({ t: 'ell', x: leg1.x2, y: leg1.y2 + 1, rx: 10, ry: 6, c: C.shoe });
+  parts.push({ t: 'ell', x: leg2.x2, y: leg2.y2 + 1, rx: 10, ry: 6, c: C.shoe });
+
+  // Blazer (torso blanco)
+  parts.push({ t: 'ell', x: 0, y: midY, rx: w * 0.46, ry: (hipY - shY) * 0.55, c: C.suit });
+  parts.push({ t: 'ell', x: -f * w * 0.30, y: midY + 2, rx: w * 0.16, ry: (hipY - shY) * 0.5, c: C.suitDark });
+  // Solapas del blazer
+  parts.push({ t: 'line', x1: f * 9, y1: shY + 4, x2: f * 2, y2: midY + 4, w: 5, c: C.suitDark });
+  parts.push({ t: 'line', x1: -f * 9, y1: shY + 4, x2: -f * 1, y2: midY + 4, w: 5, c: C.suitDark });
+  // Botones
+  parts.push({ t: 'circle', x: f * 1, y: midY + 4, r: 2, c: C.suitDark });
+  parts.push({ t: 'circle', x: f * 1, y: midY - 3, r: 2, c: C.suitDark });
+
+  // Banda presidencial (roja con franja blanca) de hombro a cintura
+  parts.push({ t: 'line', x1: f * 9, y1: shY + 10, x2: -f * 10, y2: hipY + 2, w: 11, c: C.sash });
+  parts.push({ t: 'line', x1: f * 9, y1: shY + 10, x2: -f * 10, y2: hipY + 2, w: 4, c: C.sashLight });
+
+  // Cinturón
+  parts.push({ t: 'line', x1: -f * 9, y1: hipY, x2: f * 9, y2: hipY, w: 5, c: C.suitDark });
+
+  // Cuello
+  parts.push({ t: 'rect', x: -5, y: headY + 9, w: 10, h: (shY - 2) - (headY + 9), c: C.skin });
+
+  // Cabeza: pelo negro liso a los hombros (sin rasgos faciales)
+  parts.push({ t: 'ell', x: 0, y: headY, rx: 15, ry: 14, c: C.hair });          // pelo trasero
+  parts.push({ t: 'ell', x: f * 2, y: headY + 1, rx: 11.5, ry: 11.5, c: C.skin }); // cara
+  parts.push({ t: 'ell', x: f * 2, y: headY - 6, rx: 12, ry: 6, c: C.hair });   // flequillo
+  // Mechones laterales hasta los hombros
+  parts.push({ t: 'rect', x: f * 2 - 14, y: headY - 2, w: 7, h: (shY + 2) - (headY - 2), c: C.hair });
+  parts.push({ t: 'rect', x: f * 2 + 7, y: headY - 2, w: 7, h: (shY + 2) - (headY - 2), c: C.hair });
+
+  // Brazos: manga blanca + mano sin dedos
+  parts.push({ t: 'line', x1: arm1.x1, y1: arm1.y1, x2: arm1.x2, y2: arm1.y2, w: 10, c: C.suitLight });
+  parts.push({ t: 'line', x1: arm2.x1, y1: arm2.y1, x2: arm2.x2, y2: arm2.y2, w: 10, c: C.suitLight });
+  if (!isPunch) parts.push({ t: 'circle', x: arm1.x2, y: arm1.y2, r: 6, c: C.skin });
+  parts.push({ t: 'circle', x: arm2.x2, y: arm2.y2, r: 6, c: C.skin });
+
   return parts;
 };
 
@@ -276,6 +324,10 @@ function drawPart(ctx, p) {
   } else if (p.t === 'circle') {
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (p.t === 'ell') {
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, p.rx, p.ry, 0, 0, Math.PI * 2);
     ctx.fill();
   } else if (p.t === 'line') {
     ctx.lineWidth = p.w;

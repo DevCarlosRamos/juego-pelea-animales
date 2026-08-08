@@ -39,6 +39,20 @@ Juego de combate arcade **para celular** (HTML5 + CSS + JavaScript puro, sin fra
 
 El podio de puntuaciones se guarda en **D1 (SQLite serverless de Cloudflare)**.
 
+### 🎨 Personaje v2 (rediseño del jugador)
+
+La rama **`rediseno-personaje-v2`** rediseña por completo al personaje principal:
+
+- **Figura femenina estilizada** de política con traje formal (inspiración **Keiko Fujimori**, pero genérica y NO realista, estilo cartoon minimalista).
+- **Pelo negro liso a los hombros**, sin rasgos faciales (estilo *faceless*).
+- **Traje blanco**: blazer (con solapas y botones) + pantalón.
+- **Banda presidencial roja con franja blanca** cruzando del hombro a la cintura.
+- **Zapatos negros**.
+- **Mismas proporciones** que el personaje original (58×128 px), pivot centrado y orientación hacia la derecha.
+- **Brazos y piernas separados** para las animaciones: *idle, walk, jump, punch, kick, block, hit, ko*.
+- Todo es **dibujo procedural en Canvas** (`web/js/fighter.js` → `buildPose()`), sin imágenes externas y con fondo transparente.
+
+
 ---
 
 ## 🏗️ Arquitectura (100% Cloudflare, sin servidor propio)
@@ -266,6 +280,7 @@ El smoke test carga el juego con un DOM/canvas simulado, comprueba que la **llam
 | Versión | Descripción |
 |---------|-------------|
 | **v1.0** | Creación de *PELEA CON ANIMALES* sobre la base del juego *¡PELEA!*: 12 animales, llama obligatoria primero, aparición anticipada del siguiente rival desde un lado aleatorio, D1 serverless, subdominio propio y deploy automatizado. |
+| **v2** (`rediseno-personaje-v2`) | Rediseño completo del personaje principal: política con traje blanco, banda presidencial roja/blanca, pelo negro a los hombros, zapatos negros y estilo cartoon minimalista (dibujo procedural en Canvas, mismas proporciones y animaciones). |
 
 ---
 

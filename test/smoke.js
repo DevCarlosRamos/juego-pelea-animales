@@ -59,6 +59,37 @@ for (const f of files) {
   vm.runInThisContext(code, { filename: f });
 }
 
+// ---- Validar poses del personaje v2 (todos los estados y ataques) ----
+(function validatePoses() {
+  const scenarios = [
+    { state: 'idle' },
+    { state: 'walk' },
+    { state: 'jump' },
+    { state: 'attack', attack: { type: 'punch', t: 0.12, hitDone: false } },
+    { state: 'attack', attack: { type: 'kick', t: 0.24, hitDone: false } },
+    { state: 'block' },
+    { state: 'hit' },
+    { state: 'ko' }
+  ];
+  for (const sc of scenarios) {
+    const pf = new Fighter({ name: 'Tú', isPlayer: true, x: 100 });
+    pf.state = sc.state;
+    if (sc.attack) pf.attack = sc.attack;
+    pf.animT = 0.5;
+    const parts = pf.buildPose();
+    if (parts.length < 12) throw new Error('Pose ' + sc.state + ' muy pobre: ' + parts.length + ' partes');
+    for (const p of parts) {
+      const vals = [p.x, p.y, p.w, p.h, p.r, p.rx, p.ry, p.x1, p.y1, p.x2, p.y2];
+      for (const v of vals) {
+        if (v !== undefined && (!isFinite(v) || Math.abs(v) > 2000)) {
+          throw new Error('Pose ' + sc.state + ' inválida (valor ' + v + '): ' + JSON.stringify(p));
+        }
+      }
+    }
+  }
+  console.log('Poses v2 OK (idle, walk, jump, punch, kick, block, hit, ko)');
+})();
+
 // ---- Ejecutar una partida simulada ----
 const canvas = document.getElementById('gameCanvas');
 const game = new Game(canvas);
