@@ -90,6 +90,41 @@ for (const f of files) {
   console.log('Poses v2 OK (idle, walk, jump, punch, kick, block, hit, ko)');
 })();
 
+
+// ---- Bugfix: ataque en el aire + águila (volador) alcanzable y atacable ----
+(function validateAirCombat() {
+  // 1) El jugador debe poder puñetear/patadear en pleno salto
+  const p = new Fighter({ name: 'Tú', isPlayer: true, x: 100 });
+  p.state = 'jump';
+  p.onGround = false;
+  p.cooldown = 0;
+  p.attack = null;
+  if (!p.canAct()) throw new Error('No se puede atacar en pleno salto');
+  if (!p.startAttack('punch')) throw new Error('El puño en el aire no se ejecutó');
+  if (!p.attack) throw new Error('El ataque aéreo no se inició');
+  p.attack = { type: 'kick', t: 0.24, hitDone: false };
+  p.state = 'attack';
+  if (!p.getAttackHitbox()) throw new Error('La patada aérea no genera hitbox');
+
+  // 2) El águila (volador) sí puede atacar (antes nunca podía)
+  const def = CFG.animalById('aguila');
+  const ag = new Fighter({ name: 'Águila', kind: 'aguila', hp: def.hp, speed: def.speed, w: def.w, h: def.h, fly: def.fly, attacks: def, x: 300 });
+  if (!ag.canAct()) throw new Error('El águila no puede atacar');
+
+  // 3) Con la altura acotada (60-160 px) un salto del jugador alcanza al águila
+  const gY = CFG.GROUND_Y * CFG.H;
+  const jumpTop = (gY - 149) - CFG.fighter.h * 0.78;         // tope del hitbox en el salto máximo
+  const jumpBot = jumpTop + CFG.fighter.h * 0.56;
+  for (let i = 0; i < 20; i++) {
+    const y = gY - (60 + Math.random() * 100);
+    const bodyTop = y - def.h;
+    const bodyBot = y;
+    if (bodyBot > jumpTop && bodyTop < jumpBot) return; // alcanzable
+  }
+  throw new Error('El águila puede quedar fuera del alcance de un salto');
+})();
+console.log('Bugfix OK (ataque en el aire y águila alcanzable/atacable)');
+
 // ---- Ejecutar una partida simulada ----
 const canvas = document.getElementById('gameCanvas');
 const game = new Game(canvas);

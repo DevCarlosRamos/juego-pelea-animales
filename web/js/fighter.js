@@ -61,8 +61,11 @@ Fighter.prototype.animalDef = function () {
 };
 
 Fighter.prototype.canAct = function () {
-  return (this.state === 'idle' || this.state === 'walk' || this.state === 'block') &&
-         this.onGround && this.cooldown <= 0 && !this.attack && !this.enter;
+  // Bugfix: permitir atacar en pleno salto (para alcanzar voladores) y
+  // que los animales voladores (águila) puedan atacar aunque estén en el aire.
+  if (this.cooldown > 0 || this.attack || this.enter || this.state === 'ko' || this.state === 'hit') return false;
+  if (this.fly) return true;
+  return this.state === 'idle' || this.state === 'walk' || this.state === 'block' || this.state === 'jump';
 };
 
 Fighter.prototype.doJump = function () {
@@ -127,7 +130,11 @@ Fighter.prototype.update = function (dt) {
     this.attack.t += dt;
     if (this.attack.t >= def.startup + def.active + def.recovery) {
       this.attack = null;
-      if (this.state === 'attack') { this.state = 'idle'; this.stateT = 0; }
+      if (this.state === 'attack') {
+        // Bugfix: si el ataque se hizo en el aire, volver a la pose de salto
+        this.state = (!this.onGround && !this.fly) ? 'jump' : 'idle';
+        this.stateT = 0;
+      }
     }
   }
 
@@ -136,7 +143,7 @@ Fighter.prototype.update = function (dt) {
   }
   if (this.stun > 0) this.stun -= dt;
 
-  if (this.blocking && this.canAct()) {
+  if (this.blocking && (this.onGround || this.fly) && this.canAct()) {
     this.state = 'block';
     this.blockT = 0.25;
   } else if (this.state === 'block' && !this.blocking) {
@@ -279,9 +286,10 @@ Fighter.prototype.buildPose = function () {
   parts.push({ t: 'ell', x: leg1.x2, y: leg1.y2 + 1, rx: 10, ry: 6, c: C.shoe });
   parts.push({ t: 'ell', x: leg2.x2, y: leg2.y2 + 1, rx: 10, ry: 6, c: C.shoe });
 
-  // Blazer (torso blanco)
+  // Blazer (torso blanco): un solo bloque limpio (sin "panza doble")
   parts.push({ t: 'ell', x: 0, y: midY, rx: w * 0.46, ry: (hipY - shY) * 0.55, c: C.suit });
-  parts.push({ t: 'ell', x: -f * w * 0.30, y: midY + 2, rx: w * 0.16, ry: (hipY - shY) * 0.5, c: C.suitDark });
+  // Sombra sutil solo en el borde inferior (cintura), no al costado
+  parts.push({ t: 'ell', x: 0, y: hipY + 2, rx: w * 0.40, ry: 5, c: C.suitDark });
   // Solapas del blazer
   parts.push({ t: 'line', x1: f * 9, y1: shY + 4, x2: f * 2, y2: midY + 4, w: 5, c: C.suitDark });
   parts.push({ t: 'line', x1: -f * 9, y1: shY + 4, x2: -f * 1, y2: midY + 4, w: 5, c: C.suitDark });

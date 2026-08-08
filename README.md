@@ -281,6 +281,7 @@ El smoke test carga el juego con un DOM/canvas simulado, comprueba que la **llam
 |---------|-------------|
 | **v1.0** | Creación de *PELEA CON ANIMALES* sobre la base del juego *¡PELEA!*: 12 animales, llama obligatoria primero, aparición anticipada del siguiente rival desde un lado aleatorio, D1 serverless, subdominio propio y deploy automatizado. |
 | **v2** (`rediseno-personaje-v2`) | Rediseño completo del personaje principal: política con traje blanco, banda presidencial roja/blanca, pelo negro a los hombros, zapatos negros y estilo cartoon minimalista (dibujo procedural en Canvas, mismas proporciones y animaciones). |
+| **v2.1** (`rediseno-personaje-v2`) | Bugfix: ataques **en pleno salto** (puñete/patada aérea) para golpear voladores, el **águila** ahora ataca y vuela a una altura alcanzable, y corrección del torso del personaje (se eliminó la sombra lateral que duplicaba la panza). |
 
 ---
 

@@ -48,8 +48,8 @@ Game.prototype.spawnAnimal = function (asQueued) {
   const side = Math.random() < 0.5 ? -1 : 1;   // lado aleatorio (solo una entrada)
   // Punto de aparición aleatorio del lado elegido:
   //  - terrestres: siempre en el suelo
-  //  - voladores: altura aleatoria (puede entrar por arriba)
-  const y = def.fly ? this.groundY - (90 + Math.random() * 210) : this.groundY;
+  //  - voladores: altura aleatoria ACOTADA para que el jugador los alcance con un salto
+  const y = def.fly ? this.groundY - (60 + Math.random() * 100) : this.groundY;
   const x = side < 0 ? -90 : CFG.W + 90;
 
   const f = new Fighter({
